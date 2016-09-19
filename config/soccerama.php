@@ -13,4 +13,6 @@ return [
 
 
     'api_token' => env('SOCCERAMA_API_TOKEN'),
+
+    'disable_ssl_verification' => true
 ];
