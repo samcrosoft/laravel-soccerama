@@ -8,15 +8,22 @@
 
 namespace Samcrosoft\Soccerama\Endpoints;
 
-
-use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
+use Purl\Url;
 use Samcrosoft\Soccerama\Factory\SocceramaFactory;
 use Samcrosoft\Soccerama\Initiators\BaseInitiator;
 use Samcrosoft\Soccerama\Presenters\Countries\Country;
 
+/**
+ * Class BaseEndpoint
+ * @package Samcrosoft\Soccerama\Endpoints
+ */
 abstract class BaseEndpoint
 {
+
+    /**
+     * @const string
+     */
+    const RESPONSE_KEY_DATA = "data";
     /**
      * @var null|string
      */
@@ -60,11 +67,9 @@ abstract class BaseEndpoint
     public function makeRequest(BaseInitiator $initiator)
     {
         /*
-         * setup the http client
+         * setup the http client and get the response
          */
-        $client = $this->getHttpClient($initiator);
-
-        $response = $client->get($initiator->getInitiatorUrl());
+        $response = $this->getHttpResponse($initiator);
         $parsedResponse = $this->parseResponse($response);
 
         $mappedResponse = is_null($this->presenter) ?
@@ -75,20 +80,18 @@ abstract class BaseEndpoint
 
 
     /**
-     * @param ResponseInterface $response
-     *
+     * @param \Requests_Response $response
      * @return array
      */
-    protected function parseResponse(ResponseInterface $response)
+    protected function parseResponse(\Requests_Response $response)
     {
-        $body = $response->getBody();
-        $contents = $body->getContents();
-        $json = json_decode($contents, true);
-        return collect($json)->get("data");
+        $body = $response->body;
+        $json = json_decode($body, true);
+        return collect($json)->get(self::RESPONSE_KEY_DATA);
     }
 
     /**
-     * @param array|null  $data
+     * @param array|null $data
      *
      * @param string $presenter
      *
@@ -108,18 +111,51 @@ abstract class BaseEndpoint
     /**
      * @param BaseInitiator $initiator
      *
-     * @return Client
+     * @return \Requests_Response
      */
-    protected function getHttpClient(BaseInitiator $initiator)
+    protected function getHttpResponse(BaseInitiator $initiator)
     {
-        $client = new Client([
-            'base_uri' => $this->getFactory()->getApiBaseUrl(),
-            'verify'   => false,    //disable SSL verification
-            'query'    => [
-                'api_token' => $this->getFactory()->getApiToken(),
-                'include'   => $initiator->getIncludes(),
-            ],
-        ]);
-        return $client;
+        $url = $this->getRequestURL($initiator);
+        $headers = [];
+        $options = [
+            'verify' => !(config("soccerama.disable_ssl_verification", false))
+        ];
+        return \Requests::get($url->getUrl(), $headers, $options);
+    }
+
+    /**
+     * @param BaseInitiator $initiator
+     * @return Url
+     */
+    private function getRequestURL(BaseInitiator $initiator)
+    {
+        $url = new Url($this->getFactory()->getApiBaseUrl());
+        /*
+         * Add the initiator endpoint as path to the base url
+         */
+        $url->path->add($initiator->getInitiatorUrl());
+
+        $options = [
+            'api_token' => $this->getFactory()->getApiToken(),
+            'include' => $this->buildIncludes($initiator->getIncludes()),
+        ];
+        $url->query->setData($options);
+
+        return $url;
+    }
+
+    /**
+     * @param array|null $includes
+     * @return array|string
+     */
+    private function buildIncludes(array $includes = null)
+    {
+        if (!empty($includes) && is_array($includes)) {
+            $includes = implode(",", $includes);
+        } else {
+            $includes = "";
+        }
+
+        return $includes;
     }
 }

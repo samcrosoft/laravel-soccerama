@@ -14,7 +14,8 @@
     }
   ],
   "require": {
-    "guzzlehttp/guzzle": "^6.2"
+    "rmccue/requests": "^1.0",
+    "jwage/purl": "^0.0.7"
   },
   "require-dev": {
     "mockery/mockery": "0.9.*",
@@ -24,7 +25,7 @@
   "autoload": {
     "psr-4": {
       "Samcrosoft\\Soccerama\\": "src/",
-      "Tests\\": "test/"
+      "Tests\\": "tests/"
     },
     "classmap": [
       "tests/BaseTestCase.php"
