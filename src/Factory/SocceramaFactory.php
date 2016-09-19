@@ -73,12 +73,13 @@ class SocceramaFactory
 
 
     /**
-     * @return mixed
+     * This will return the base URL for the api
+     * @return string
      */
     public function getApiBaseUrl()
     {
         $endpoint = config(self::CONFIG_KEY_SOCCERAMA_API_BASE);
-        $endpoint = rtrim($endpoint, "\\/")."/";
+        $endpoint = rtrim($endpoint, "\\/");
         return $endpoint;
     }
 
