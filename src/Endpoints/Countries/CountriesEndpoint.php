@@ -36,4 +36,14 @@ class CountriesEndpoint extends BaseEndpoint
     {
         return new CountryAllInitiator($this);
     }
+
+
+    /**
+     * @param $country_id
+     */
+    public function getCountyByID($country_id)
+    {
+        $oCountry = new CountryAllInitiator($this);
+        return $oCountry->getCountryByID($country_id);
+    }
 }

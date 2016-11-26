@@ -55,6 +55,13 @@ abstract class BaseInitiator
         }
     }
 
+    protected function appendToEndPointUrl($append_url)
+    {
+        $append_url = is_array($append_url) ?
+            implode("/", $append_url) : $append_url;
+
+    }
+
     /**
      * @return array
      */

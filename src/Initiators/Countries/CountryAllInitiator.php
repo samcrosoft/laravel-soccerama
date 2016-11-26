@@ -17,6 +17,9 @@ use Samcrosoft\Soccerama\Initiators\BaseInitiator;
  */
 class CountryAllInitiator extends BaseInitiator
 {
+
+    var $endpoint = "countries";
+
     /**
      * @return $this
      */
@@ -27,6 +30,10 @@ class CountryAllInitiator extends BaseInitiator
     }
 
 
+    public function getCountryByID($country_id)
+    {
+        $this->appendToEndPointUrl($country_id);
+    }
 
 
 }

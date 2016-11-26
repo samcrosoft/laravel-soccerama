@@ -15,6 +15,7 @@ use Samcrosoft\Soccerama\Presenters\Countries\Country;
 
 /**
  * Class BaseEndpoint
+ *
  * @package Samcrosoft\Soccerama\Endpoints
  */
 abstract class BaseEndpoint
@@ -72,15 +73,16 @@ abstract class BaseEndpoint
         $response = $this->getHttpResponse($initiator);
         $parsedResponse = $this->parseResponse($response);
 
-        $mappedResponse = is_null($this->presenter) ?
+        $mappedResponse = is_null($this->presenter) && class_exists($this->presenter) ?
             $parsedResponse :
-            $this->mapToPresenter($parsedResponse, Country::class);
+            $this->mapToPresenter($parsedResponse, $this->presenter);
         return $mappedResponse;
     }
 
 
     /**
      * @param \Requests_Response $response
+     *
      * @return array
      */
     protected function parseResponse(\Requests_Response $response)
@@ -93,7 +95,7 @@ abstract class BaseEndpoint
     /**
      * @param array|null $data
      *
-     * @param string $presenter
+     * @param string     $presenter
      *
      * @return array
      */
@@ -118,13 +120,14 @@ abstract class BaseEndpoint
         $url = $this->getRequestURL($initiator);
         $headers = [];
         $options = [
-            'verify' => !(config("soccerama.disable_ssl_verification", false))
+            'verify' => !(config("soccerama.disable_ssl_verification", false)),
         ];
         return \Requests::get($url->getUrl(), $headers, $options);
     }
 
     /**
      * @param BaseInitiator $initiator
+     *
      * @return Url
      */
     private function getRequestURL(BaseInitiator $initiator)
@@ -137,7 +140,7 @@ abstract class BaseEndpoint
 
         $options = [
             'api_token' => $this->getFactory()->getApiToken(),
-            'include' => $this->buildIncludes($initiator->getIncludes()),
+            'include'   => $this->buildIncludes($initiator->getIncludes()),
         ];
         $url->query->setData($options);
 
@@ -146,6 +149,7 @@ abstract class BaseEndpoint
 
     /**
      * @param array|null $includes
+     *
      * @return array|string
      */
     private function buildIncludes(array $includes = null)
